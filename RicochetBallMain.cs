@@ -23,6 +23,6 @@ public class RicochetBallMain
     RicochetBallForm RicochetBall_App = new RicochetBallForm();
     Application.Run(RicochetBall_App);
 
-    System.Console.WriteLine("The bouncing ball program has ended");
+    System.Console.WriteLine("The bouncing ball program has ended.");
   }
 }
