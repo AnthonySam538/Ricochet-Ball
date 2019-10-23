@@ -26,14 +26,14 @@ public class RicochetBallForm : Form
   private const double animationRate = 1000/25; //25 updates per second (should be greater than or equal to refreshRate)
   private double distance;
   private double angle;
-  // private double delta_x;
-  // private double delta_y;
+  private double delta_x;
+  private double delta_y;
 
-
-  private Point ball = new Point(formWidth/2, formHeight/2); //location of the ball
+  private PointF ball = new PointF(formWidth/2, formHeight/2); //location of the ball
 
   // Create Controls
   private Label title = new Label();
+  private Label controlPanel = new Label();
   private Button newButton = new Button();
   private Label distanceText = new Label();
   private TextBox distanceBox = new TextBox();
@@ -53,20 +53,24 @@ public class RicochetBallForm : Form
     Text = "Ricochet Ball";
     title.Text = "Ricochet Ball by Anthony Sam";
     title.TextAlign = ContentAlignment.MiddleCenter;
+    controlPanel.Text = "Control Panel";
+    controlPanel.TextAlign = ContentAlignment.TopCenter;
     newButton.Text = "New";
     distanceText.Text = "Speed: ";
     angleText.Text = "Angle: ";
     startButton.Text = "Start";
-    info.Text = "X: Y: ";
+    info.Text = "X: " + (ball.X+radius) + "\nY: " + (ball.Y+radius);
     quitButton.Text = "Quit";
 
     // Set up sizes
     Size = new Size(formWidth, formHeight);
     title.Size = new Size(formWidth, formHeight/10);
+    controlPanel.Size = title.Size;
     distanceText.AutoSize = true;
     angleText.AutoSize = true;
 
     // Set up locations
+    controlPanel.Location = new Point(0, formHeight-controlPanel.Height);
     newButton.Location = new Point(formWidth*1/6, formHeight*19/20-newButton.Height/2);
     distanceBox.Location = new Point(formWidth*2/6, formHeight*19/20-distanceBox.Height);
     distanceText.Location = new Point(distanceBox.Left-distanceText.Width, distanceBox.Top);
@@ -77,14 +81,15 @@ public class RicochetBallForm : Form
     quitButton.Location = new Point(formWidth*5/6, newButton.Top);
 
     // Set up colors
-    BackColor = Color.Orange;
+    BackColor = Color.LawnGreen;
     title.BackColor = Color.Cyan;
-    distanceText.BackColor = Color.Transparent;
-    angleText.BackColor = Color.Transparent;
+    controlPanel.BackColor = Color.Magenta;
+    distanceText.BackColor = controlPanel.BackColor;
+    angleText.BackColor = controlPanel.BackColor;
     newButton.BackColor = Color.DarkOrchid;
     startButton.BackColor = newButton.BackColor;
     quitButton.BackColor = newButton.BackColor;
-    info.BackColor = Color.Transparent;
+    info.BackColor = controlPanel.BackColor;
 
     // Add the controls to the form
     Controls.Add(title);
@@ -96,6 +101,7 @@ public class RicochetBallForm : Form
     Controls.Add(quitButton);
     Controls.Add(distanceBox);
     Controls.Add(angleBox);
+    Controls.Add(controlPanel);
 
     // Define which method each control should call (The methods will be defined below)
     newButton.Click += new EventHandler(reset);
@@ -112,8 +118,6 @@ public class RicochetBallForm : Form
 
     graphics.FillEllipse(Brushes.Red, ball.X, ball.Y, radius*2, radius*2); //draws the ball
 
-    graphics.FillRectangle(Brushes.Yellow, 0, formHeight*9/10, title.Width, title.Height); //draws the yellow bar for the control panel
-
     base.OnPaint(e);
   }
 
@@ -122,16 +126,20 @@ public class RicochetBallForm : Form
     refreshClock.Stop();
     animationClock.Stop();
     ball = new Point(formWidth/2, formHeight/2);
-    info.Text = "X: Y: ";
+    info.Text = "X: " + (ball.X+radius) + "\nY: " + (ball.Y+radius);
     Invalidate();
   }
 
   protected void start(Object sender, EventArgs events)
   {
-    distance = double.Parse(distanceBox.Text);
-    angle = double.Parse(angleBox.Text);
+    try{distance = double.Parse(distanceBox.Text);}catch(System.FormatException){}
+    try{angle = double.Parse(angleBox.Text);}catch(System.FormatException){}
+
     refreshClock.Start();
     animationClock.Start();
+
+    delta_x = distance*Math.Cos(angle*Math.PI/180);
+    delta_y = distance*Math.Sin(angle*Math.PI/180);
   }
 
   protected void quit(Object sender, EventArgs events)
@@ -142,14 +150,21 @@ public class RicochetBallForm : Form
 
   protected void refreshScreen(Object sender, ElapsedEventArgs events)
   {
-    info.Text = "X: " + ball.X + " Y: " + ball.Y;
+    info.Text = "X: " + (ball.X+radius) + "\nY: " + (ball.Y+radius);
 
     Invalidate();
   }
 
   protected void updateBall(Object sender, ElapsedEventArgs events)
   {
-    ball.X += (int)(distance*Math.Cos(angle*Math.PI/180));
-    ball.Y -= (int)(distance*Math.Sin(angle*Math.PI/180));
+    // move the ball
+    ball.X += (float)delta_x;
+    ball.Y -= (float)delta_y;
+
+    // check if the ball has hit the wall
+    if(ball.Y <= title.Bottom || ball.Y+radius*2 >= controlPanel.Top) //upper wall or bottom wall
+      delta_y *= -1;
+    if(ball.X <= 0 || ball.X+radius*2 >= formWidth) //left wall or right wall
+      delta_x *= -1;
   }
 }
