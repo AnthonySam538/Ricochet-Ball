@@ -22,7 +22,7 @@ public class RicochetBallForm : Form
   private const short formHeight = 1000;
   private const short formWidth = formHeight * 16/9;
   private const short radius = 5;
-  private const double refreshRate = 1000/20;   //20 frames per second (60 would be optimal)
+  private const double refreshRate = 1000/30;   //30 frames per second (60 would be optimal)
   private const double animationRate = 1000/25; //25 updates per second (should be greater than or equal to refreshRate)
   private double distance;
   private double angle;
@@ -123,23 +123,26 @@ public class RicochetBallForm : Form
 
   protected void reset(Object sender, EventArgs events)
   {
-    refreshClock.Stop();
+    refreshClock.Stop(); //stop the clocks
     animationClock.Stop();
-    ball = new Point(formWidth/2, formHeight/2);
-    info.Text = "X: " + (ball.X+radius) + "\nY: " + (ball.Y+radius);
+    ball = new Point(formWidth/2, formHeight/2); //put the ball back
+    info.Text = "X: " + (ball.X+radius) + "\nY: " + (ball.Y+radius); //reset the text
     Invalidate();
   }
 
   protected void start(Object sender, EventArgs events)
   {
+    // read the data from the TextBoxes
     try{distance = double.Parse(distanceBox.Text);}catch(System.FormatException){}
     try{angle = double.Parse(angleBox.Text);}catch(System.FormatException){}
 
-    refreshClock.Start();
-    animationClock.Start();
-
+    // calculate the delta_x and delta_y values
     delta_x = distance*Math.Cos(angle*Math.PI/180);
     delta_y = distance*Math.Sin(angle*Math.PI/180);
+    
+    // start the clocks
+    refreshClock.Start();
+    animationClock.Start();
   }
 
   protected void quit(Object sender, EventArgs events)
@@ -150,8 +153,6 @@ public class RicochetBallForm : Form
 
   protected void refreshScreen(Object sender, ElapsedEventArgs events)
   {
-    info.Text = "X: " + (ball.X+radius) + "\nY: " + (ball.Y+radius);
-
     Invalidate();
   }
 
@@ -166,5 +167,8 @@ public class RicochetBallForm : Form
       delta_y *= -1;
     if(ball.X <= 0 || ball.X+radius*2 >= formWidth) //left wall or right wall
       delta_x *= -1;
+
+    // update info.Text
+    info.Text = "X: " + (ball.X+radius) + "\nY: " + (ball.Y+radius);
   }
 }
