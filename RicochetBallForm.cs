@@ -21,9 +21,9 @@ public class RicochetBallForm : Form
 {
   private const short formHeight = 1000;
   private const short formWidth = formHeight * 16/9;
-  private const short radius = 5;
+  private const short radius = 7;
   private const double refreshRate = 1000/30;   //30 frames per second (60 would be optimal)
-  private const double animationRate = 1000/25; //25 updates per second (should be greater than or equal to refreshRate)
+  private const double animationRate = 1000/30; //60 updates per second (should be greater than or equal to refreshRate)
   private double distance;
   private double angle;
   private double delta_x;
@@ -153,7 +153,8 @@ public class RicochetBallForm : Form
 
   protected void refreshScreen(Object sender, ElapsedEventArgs events)
   {
-    Invalidate();
+    info.Text = "X: " + (ball.X+radius) + "\nY: " + (ball.Y+radius); //update info.Text
+    Invalidate(); //draw the ball
   }
 
   protected void updateBall(Object sender, ElapsedEventArgs events)
@@ -167,8 +168,5 @@ public class RicochetBallForm : Form
       delta_y *= -1;
     if(ball.X <= 0 || ball.X+radius*2 >= formWidth) //left wall or right wall
       delta_x *= -1;
-
-    // update info.Text
-    info.Text = "X: " + (ball.X+radius) + "\nY: " + (ball.Y+radius);
   }
 }
